@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sun May 24 13:04:08 CST 2026
+PNHjpt.jar-1.0.pom>=
+PNHjpt.jar-1.0-sources.jar>cs61b=
+PNHjpt.jar-1.0.jar>=

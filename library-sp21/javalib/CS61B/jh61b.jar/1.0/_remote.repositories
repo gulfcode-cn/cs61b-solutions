@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sun May 24 13:02:34 CST 2026
+jh61b.jar-1.0.pom>=
+jh61b.jar-1.0-sources.jar>cs61b=
+jh61b.jar-1.0.jar>=

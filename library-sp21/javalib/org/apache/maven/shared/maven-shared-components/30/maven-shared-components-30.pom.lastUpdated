@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Thu May 28 10:22:52 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1779934972443
+https\://maven.cs61b.org/.error=Could not transfer artifact org.apache.maven.shared\:maven-shared-components\:pom\:30 from/to cs61b (https\://maven.cs61b.org/)\: Connect to findresultshub.com\:443 [findresultshub.com/199.191.50.227] failed\: Connect timed out
+@default-cs61b-https\://maven.cs61b.org/.lastUpdated=1779934972168

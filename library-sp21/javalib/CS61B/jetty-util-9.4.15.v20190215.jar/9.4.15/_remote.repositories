@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Thu May 28 10:22:08 CST 2026
+jetty-util-9.4.15.v20190215.jar-9.4.15-sources.jar>cs61b=
+jetty-util-9.4.15.v20190215.jar-9.4.15.jar>=
+jetty-util-9.4.15.v20190215.jar-9.4.15.pom>=

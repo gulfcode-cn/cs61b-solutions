@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Thu May 28 10:19:59 CST 2026
+slf4j-simple-1.7.26.jar-1.7.26.jar>=
+slf4j-simple-1.7.26.jar-1.7.26-sources.jar>cs61b=
+slf4j-simple-1.7.26.jar-1.7.26.pom>=

@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sun May 24 13:03:32 CST 2026
+ucb.jar-1.0.pom>=
+ucb.jar-1.0-sources.jar>cs61b=
+ucb.jar-1.0.jar>=

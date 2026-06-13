@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Thu May 28 10:19:56 CST 2026
+classmexer.jar-1.0.jar>=
+classmexer.jar-1.0-sources.jar>cs61b=
+classmexer.jar-1.0.pom>=

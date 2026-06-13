@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sun May 24 13:07:40 CST 2026
+PNHucb-checkstyle.jar-1.0.jar>=
+PNHucb-checkstyle.jar-1.0.pom>=
+PNHucb-checkstyle.jar-1.0-sources.jar>cs61b=
