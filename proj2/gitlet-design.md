@@ -1,10 +1,10 @@
 # Gitlet Design Document
 
-**Name**:
+**Name**: gulfcode-cn
 
 ## Classes and Data Structures
 
-### Class 1
+### Commit
 
 #### Fields
 
