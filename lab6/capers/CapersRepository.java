@@ -1,12 +1,12 @@
 package capers;
 
 import java.io.File;
-import static capers.Utils.*;
+import java.io.IOException;
 
 /** A repository for Capers 
- * @author TODO
+ * @author gulfcode-cn
  * The structure of a Capers Repository is as follows:
- *
+ * *
  * .capers/ -- top level folder for all persistent data in your lab12 folder
  *    - dogs/ -- folder containing all of the persistent data for dogs
  *    - story -- file containing the current story
@@ -18,20 +18,39 @@ public class CapersRepository {
     static final File CWD = new File(System.getProperty("user.dir"));
 
     /** Main metadata folder. */
-    static final File CAPERS_FOLDER = null; // TODO Hint: look at the `join`
-                                            //      function in Utils
+    static final File CAPERS_FOLDER = Utils.join(CWD,".capers"); // TODO Hint: look at the `join`
+                                                                             //function in Utils
 
     /**
      * Does required filesystem operations to allow for persistence.
      * (creates any necessary folders or files)
      * Remember: recommended structure (you do not have to follow):
-     *
+     * *
      * .capers/ -- top level folder for all persistent data in your lab12 folder
      *    - dogs/ -- folder containing all of the persistent data for dogs
      *    - story -- file containing the current story
      */
     public static void setupPersistence() {
         // TODO
+        if (CWD.getName().equals("lab6")) {
+            if (!CAPERS_FOLDER.mkdir()) {
+                 System.out.println(".capers dir creation failed");
+            }
+            File dogs = Utils.join(CAPERS_FOLDER,"dogs");
+            if (!dogs.mkdir()) {
+                Utils.exitWithError("dogs dir creation failed");
+            }
+            File story = Utils.join(CAPERS_FOLDER,"story.txt");
+            try {
+                if(!story.createNewFile()) {
+                    Utils.exitWithError("story.txt creation failed");
+                }
+            } catch (IOException excp) {
+                throw new IllegalArgumentException(excp.getMessage());
+            }
+        } else {
+            System.out.println("You must be in lab6 to call this command !");
+        }
     }
 
     /**
