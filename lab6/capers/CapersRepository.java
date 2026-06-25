@@ -49,7 +49,7 @@ public class CapersRepository {
                 throw new IllegalArgumentException(excp.getMessage());
             }
         } else {
-            System.out.println("You must be in lab6 to call this command !");
+            Utils.exitWithError("You must be in lab6 to call this command !");
         }
     }
 
