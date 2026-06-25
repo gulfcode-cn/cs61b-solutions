@@ -78,7 +78,7 @@ class Utils {
                                                  Class<T> expectedClass) {
         try {
             ObjectInputStream in =
-                    new ObjectInputStream(new FileInputStream(file));
+                    new ObjectInputStream(Files.newInputStream(file.toPath()));
             T result = expectedClass.cast(in.readObject());
             in.close();
             return result;

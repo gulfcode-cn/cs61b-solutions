@@ -1,17 +1,18 @@
 package capers;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import static capers.Utils.*;
 
 /** Represents a dog that can be serialized.
- * @author TODO
+ * @author gulfcode-cn
 */
-public class Dog { // TODO
+public class Dog implements Serializable{ // TODO
 
     /** Folder that dogs live in. */
-    static final File DOG_FOLDER = null; // TODO (hint: look at the `join`
-                                         //      function in Utils)
+    static final File DOG_FOLDER = Utils.join(CapersRepository.CAPERS_FOLDER,"dogs"); // TODO (hint: look at the `join`
+                                                                                                            //   function in Utils)
 
     /** Age of dog. */
     private int age;
@@ -40,6 +41,12 @@ public class Dog { // TODO
      */
     public static Dog fromFile(String name) {
         // TODO (hint: look at the Utils file)
+        File dog = Utils.join(DOG_FOLDER,name);
+        if (dog.exists()) {
+            return Utils.readObject(dog,Dog.class);
+        } else {
+            Utils.exitWithError("this dog is not existed .");
+        }
         return null;
     }
 
@@ -48,7 +55,7 @@ public class Dog { // TODO
      */
     public void haveBirthday() {
         age += 1;
-        System.out.println(toString());
+        System.out.println(this);
         System.out.println("Happy birthday! Woof! Woof!");
     }
 
@@ -57,6 +64,15 @@ public class Dog { // TODO
      */
     public void saveDog() {
         // TODO (hint: don't forget dog names are unique)
+        File dogFile = new File(DOG_FOLDER,this.name);
+        Utils.writeObject(dogFile,this);
+        try {
+            if (!dogFile.createNewFile()) {
+                Utils.exitWithError("dogFile was not existed");
+            }
+        } catch(IOException exp) {
+            throw new IllegalArgumentException(exp.getMessage());
+        }
     }
 
     @Override

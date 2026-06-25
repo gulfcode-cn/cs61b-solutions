@@ -34,16 +34,16 @@ public class CapersRepository {
         // TODO
         if (CWD.getName().equals("lab6")) {
             if (!CAPERS_FOLDER.mkdir()) {
-                 System.out.println(".capers dir creation failed");
+                 Utils.exitWithError(".capers dir creation failed");
             }
             File dogs = Utils.join(CAPERS_FOLDER,"dogs");
             if (!dogs.mkdir()) {
                 Utils.exitWithError("dogs dir creation failed");
             }
-            File story = Utils.join(CAPERS_FOLDER,"story.txt");
+            File story = Utils.join(CAPERS_FOLDER,"story");
             try {
                 if(!story.createNewFile()) {
-                    Utils.exitWithError("story.txt creation failed");
+                    Utils.exitWithError("story file creation failed");
                 }
             } catch (IOException excp) {
                 throw new IllegalArgumentException(excp.getMessage());
@@ -60,6 +60,14 @@ public class CapersRepository {
      */
     public static void writeStory(String text) {
         // TODO
+        File story = Utils.join(CAPERS_FOLDER,"story");
+        if (story.exists()) {
+            Utils.writeContents(story,
+                    Utils.readContentsAsString(story),
+                    text);
+        } else {
+            Utils.exitWithError("story was not existed");
+        }
     }
 
     /**
@@ -69,6 +77,12 @@ public class CapersRepository {
      */
     public static void makeDog(String name, String breed, int age) {
         // TODO
+        if (Dog.DOG_FOLDER.exists()) {
+            Dog newDog = new Dog(name, breed, age);
+            newDog.saveDog();
+        } else {
+            Utils.exitWithError("dogs dir was not found .");
+        }
     }
 
     /**
@@ -79,5 +93,8 @@ public class CapersRepository {
      */
     public static void celebrateBirthday(String name) {
         // TODO
+        Dog birthdayDog = Dog.fromFile(name);
+        birthdayDog.haveBirthday();
+        birthdayDog.saveDog();
     }
 }

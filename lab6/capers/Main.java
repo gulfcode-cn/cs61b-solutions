@@ -1,11 +1,12 @@
 package capers;
 
 import java.io.File;
+import java.util.Arrays;
 
 import static capers.Utils.*;
 
 /** Canine Capers: A Gitlet Prelude.
- * @author TODO
+ * @author gulfcode-cn
 */
 public class Main {
     /**
@@ -13,23 +14,23 @@ public class Main {
      * story [text] -- Appends "text" + a newline to a story file in the
      *                 .capers directory. Additionally, prints out the
      *                 current story.
-     *
+     * *
      * dog [name] [breed] [age] -- Persistently creates a dog with
      *                             the specified parameters; should also print
      *                             the dog's toString(). Assume dog names are
      *                             unique.
-     *
+     * *
      * birthday [name] -- Advances a dog's age persistently
      *                    and prints out a celebratory message.
-     *
+     * *
      * All persistent data should be stored in a ".capers"
      * directory in the current working directory.
-     *
+     * *
      * Recommended structure (you do not have to follow):
-     *
+     * *
      * *YOU SHOULD NOT CREATE THESE MANUALLY,
      *  YOUR PROGRAM SHOULD CREATE THESE FOLDERS/FILES*
-     *
+     * *
      * .capers/ -- top level folder for all persistent data in your lab12 folder
      *    - dogs/ -- folder containing all of the persistent data for dogs
      *    - story -- file containing the current story
@@ -40,6 +41,7 @@ public class Main {
         if (args.length == 0) {
             Utils.exitWithError("Must have at least one argument");
         }
+        System.out.println("args" + Arrays.toString(args));
 
         CapersRepository.setupPersistence();
         String text;
@@ -61,7 +63,6 @@ public class Main {
         default:
             exitWithError(String.format("Unknown command: %s", args[0]));
         }
-        return;
     }
 
     /**
