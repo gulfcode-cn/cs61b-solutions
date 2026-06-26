@@ -53,7 +53,7 @@ public class Main {
             CapersRepository.writeStory(text);
             break;
         case "dog":
-            validateNumArgs("dog", args, 4);
+            //validateNumArgs("dog", args, 4);
             // TODO: make a dog
             String name = args[1];
             String breed = args[2];

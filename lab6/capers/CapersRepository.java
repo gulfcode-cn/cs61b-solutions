@@ -74,6 +74,7 @@ public class CapersRepository {
         if (Dog.DOG_FOLDER.exists()) {
             Dog newDog = new Dog(name, breed, age);
             newDog.saveDog();
+            System.out.println(newDog);
         } else {
             Utils.exitWithError("dogs dir was not found .");
         }

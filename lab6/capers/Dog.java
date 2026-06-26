@@ -65,12 +65,15 @@ public class Dog implements Serializable{ // TODO
     public void saveDog() {
         // TODO (hint: don't forget dog names are unique)
         File dogFile = new File(DOG_FOLDER,this.name);
+        File overSavedDogFile = Utils.join(DOG_FOLDER,this.name);
         Utils.writeObject(dogFile,this);
         try {
-            if (!dogFile.createNewFile()) {
-                Utils.exitWithError("dogFile was not existed");
+            if (!overSavedDogFile.exists() && !dogFile.createNewFile()) {
+                Utils.exitWithError("dog file save failed .");
+            } else {
+                Utils.writeObject(overSavedDogFile,this);
             }
-        } catch(IOException exp) {
+        } catch (IOException exp) {
             throw new IllegalArgumentException(exp.getMessage());
         }
     }
