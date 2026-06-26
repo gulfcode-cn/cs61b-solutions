@@ -32,25 +32,21 @@ public class CapersRepository {
      */
     public static void setupPersistence() {
         // TODO
-        if (CWD.getName().equals("lab6")) {
-            if (!CAPERS_FOLDER.mkdir()) {
+            if (!CAPERS_FOLDER.exists() && !CAPERS_FOLDER.mkdir()) {
                  Utils.exitWithError(".capers dir creation failed");
             }
             File dogs = Utils.join(CAPERS_FOLDER,"dogs");
-            if (!dogs.mkdir()) {
+            if (!dogs.exists() && !dogs.mkdir()) {
                 Utils.exitWithError("dogs dir creation failed");
             }
             File story = Utils.join(CAPERS_FOLDER,"story");
             try {
-                if(!story.createNewFile()) {
+                if(!story.exists() && !story.createNewFile()) {
                     Utils.exitWithError("story file creation failed");
                 }
             } catch (IOException excp) {
                 throw new IllegalArgumentException(excp.getMessage());
             }
-        } else {
-            Utils.exitWithError("You must be in lab6 to call this command !");
-        }
     }
 
     /**
@@ -61,13 +57,11 @@ public class CapersRepository {
     public static void writeStory(String text) {
         // TODO
         File story = Utils.join(CAPERS_FOLDER,"story");
-        if (story.exists()) {
             Utils.writeContents(story,
                     Utils.readContentsAsString(story),
-                    text);
-        } else {
-            Utils.exitWithError("story was not existed");
-        }
+                    text,
+                    "\n");
+        System.out.println(Utils.readContentsAsString(story));
     }
 
     /**
