@@ -2,8 +2,10 @@ package gitlet;
 
 // TODO: any imports you need here
 
+import java.util.Deque;
 import java.io.Serializable;
 import java.time.*;
+import java.util.LinkedList;
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -38,7 +40,8 @@ public class Commit implements Serializable {
     /** the time of commit */
     private final Instant commitTime;
 
-
+    /** contain all SHA-1 hash code of blobs with Deque*/
+    private Deque<String> blobsId;
 
     /** return sha-1 code of this commit*/
     public String getID() {
@@ -51,9 +54,11 @@ public class Commit implements Serializable {
         if (parent == null) {
             commitTime = Instant.EPOCH;
             parentID = null;
+            blobsId = new LinkedList<>();
         } else {
             commitTime = Instant.now();
-            parentID = parent.getID();
+            parentID = parent.ID;
+            blobsId = new LinkedList<>(parent.blobsId);
         }
         ID = Utils.sha1(Utils.serialize(this));
     }

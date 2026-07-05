@@ -18,6 +18,7 @@ public class Main {
                 break;
             case "add":
                 // TODO: handle the `add [filename]` command
+                Repository.add(args[1]);
                 break;
             case "":
                 System.out.println("Please enter a command.");
