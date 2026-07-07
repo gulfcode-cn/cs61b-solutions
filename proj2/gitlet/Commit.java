@@ -2,10 +2,10 @@ package gitlet;
 
 // TODO: any imports you need here
 
-import java.util.Deque;
 import java.io.Serializable;
 import java.time.*;
-import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -20,7 +20,7 @@ public class Commit implements Serializable {
        String parentID
        String ID
        Instant commitTime
-
+       Deque<String> blobsId
        List all instance variables of the Commit class here with a useful
        comment above them describing what that variable represents and how that
        variable is used. We've provided one example for `message`.
@@ -41,7 +41,7 @@ public class Commit implements Serializable {
     private final Instant commitTime;
 
     /** contain all SHA-1 hash code of blobs with Deque*/
-    private Deque<String> blobsId;
+    public Map<String , String> blobsId;
 
     /** return sha-1 code of this commit*/
     public String getID() {
@@ -54,13 +54,13 @@ public class Commit implements Serializable {
         if (parent == null) {
             commitTime = Instant.EPOCH;
             parentID = null;
-            blobsId = new LinkedList<>();
+            blobsId = new HashMap<>();
         } else {
             commitTime = Instant.now();
             parentID = parent.ID;
-            blobsId = new LinkedList<>(parent.blobsId);
+            blobsId = new HashMap<>(parent.blobsId);
         }
-        ID = Utils.sha1(Utils.serialize(this));
+        ID = Utils.sha1((Object) Utils.serialize(this));
     }
 
 

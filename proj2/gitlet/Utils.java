@@ -236,4 +236,44 @@ class Utils {
         System.out.printf(msg, args);
         System.out.println();
     }
+
+    /*DIY FILE TOOL**/
+
+    /* Save the blob to object dir throuth its SHA-1 code.*/
+    static void saveFileTOobjectDir(String fileName) {
+        File theFile = join(new File(System.getProperty("user.dir")),fileName);
+        saveFileTObjectDir(theFile);
+    }
+
+    /* function is same as the upon*/
+    static void saveFileTObjectDir(File theFile) {
+        String fileSHA_1 = sha1((Object) readContents(theFile));
+        File preDir = Utils.join(Repository.objects,fileSHA_1.substring(0,2));
+        makeDir(preDir);
+        File savedFile = join(preDir,fileSHA_1.substring(2));
+        if (savedFile.exists()) {
+            System.exit(0);
+        }
+        writeObject(savedFile,theFile);
+    }
+
+    /* Save commit class to object dir*/
+    static void saveCommitTOobjectDir(Commit commit) {
+        String commitSHA_1 = sha1((Object) serialize(commit));
+        File preDir = join(Repository.objects,commitSHA_1.substring(0,2));
+        makeDir(preDir);
+        File savedFile = join(preDir,commitSHA_1.substring(2));
+        writeObject(savedFile,commit);
+    }
+
+    /** make dir faster and
+     *  if dir not exist but make failed , it could throw error
+     *  if input dir has existed , then do nothing*/
+    static void makeDir(File dir) {
+        if (!dir.exists() && !dir.mkdir()) {
+            String dirName = dir.getName();
+            System.out.printf("%s created failed \n",dirName);
+            System.exit(1);
+        }
+    }
 }

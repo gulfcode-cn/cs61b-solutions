@@ -7,12 +7,14 @@ import java.util.Map;
 import java.util.Set;
 
 public class StagingArea implements Serializable {
-    private Map<String,String> addtion;
-    private Set<String> removal;
+    /*key is FileName , value is SHA-1 code of addition File*/
+    private final Map<String,String> addition;
+    /*contain removal fileName*/
+    private final Set<String> removal;
 
-    /*return addtion area*/
-    public Map<String, String> getAddtion() {
-        return addtion;
+    /*return addition area*/
+    public Map<String, String> getAddition() {
+        return addition;
     }
 
     /*return removal area*/
@@ -21,7 +23,7 @@ public class StagingArea implements Serializable {
     }
 
     StagingArea() {
-        addtion = new HashMap<>();
+        addition = new HashMap<>();
         removal = new HashSet<>();
     }
 }

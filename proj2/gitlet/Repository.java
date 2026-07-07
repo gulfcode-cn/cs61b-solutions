@@ -1,8 +1,8 @@
 package gitlet;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static gitlet.Utils.*;
 
@@ -29,19 +29,31 @@ public class Repository {
     /* *
      * TODO: add instance variables here.
      * File CWD
-     * File GITLET_DIR
-     *
+     * File GITLET_DIR (dir
+     * File objects (dir
+     * File refs (dir
+     * File heads (dir
+     * File masterfile (file
+     * File StagingArea (file
      * List all instance variables of the Repository class here with a useful
      * comment above them describing what that variable represents and how that
      * variable is used. We've provided two examples for you.
      */
 
-    /** The current working directory. */
+    /* The current working directory. */
     public static final File CWD = new File(System.getProperty("user.dir"));
-    /** The .gitlet directory. */
+    /* The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
-    /** the dir contains all date of blobs and commits*/
+    /* the dir contains all date of blobs and commits*/
     public static final File objects = Utils.join(GITLET_DIR,"objects");
+    /* the dir */
+    public static final File refs = Utils.join(GITLET_DIR,"refs");
+    /* the dir contains master file */
+    public static final File heads = Utils.join(refs,"heads");
+    /* pointer to lastest commit*/
+    public static final File masterfile = Utils.join(heads,"master");
+    /* file contains waiting to be added or removed files*/
+    public static final File StagingArea = Utils.join(GITLET_DIR,"StagingArea");
 
     /** HEAD is the pointer that place checkout commit */
     public static Commit HEAD;
@@ -57,34 +69,14 @@ public class Repository {
     public static void init() {
         if (!GITLET_DIR.exists() && GITLET_DIR.mkdir()) {
             File HEAD = Utils.join(GITLET_DIR,"HEAD");
-            File refs = Utils.join(GITLET_DIR,"refs");
-            File heads = Utils.join(refs,"heads");
-            File master = Utils.join(heads,"master");
-            File StagingArea = Utils.join(GITLET_DIR,"StagingArea");
             StagingArea stagingArea = new StagingArea();
             Commit commit = new Commit("initial commit",null);
-            String commitSHA_1 = commit.getID();
-            if (!refs.mkdir()) {
-                System.out.println("refs dir created failed");
-                System.exit(1);
-            }
-            if (!heads.mkdir()) {
-                System.out.println("heads dir created failed");
-                System.exit(1);
-            }
-            if (!objects.mkdir()) {
-                System.out.println("objects dir created failed");
-                System.exit(1);
-            }
-            File save_dir = Utils.join(objects,commitSHA_1.substring(0,2));
-            if (!save_dir.mkdir()) {
-                System.out.println("save_dir created failed");
-                System.exit(1);
-            }
-            File save_file = Utils.join(save_dir,commitSHA_1.substring(2));
+            Utils.makeDir(refs);
+            Utils.makeDir(heads);
+            Utils.makeDir(objects);
+            Utils.saveCommitTOobjectDir(commit);
             Utils.writeObject(StagingArea,stagingArea);
-            Utils.writeObject(save_file,commit);
-            Utils.writeObject(master,commitSHA_1);
+            Utils.writeObject(masterfile,commit.getID());
         } else {
             System.out.println("A Gitlet version-control system already exists in the current directory.");
             System.exit(1);
@@ -100,17 +92,33 @@ public class Repository {
     public static void add(String fileName) {
         File addedFile = Utils.join(new File(System.getProperty("user.dir")),fileName);
         if (addedFile.exists()) {
-            String addedFileSHA_1 = Utils.sha1(Utils.readContents(addedFile));
-            File preDir = Utils.join(objects,addedFileSHA_1.substring(0,2));
-            if (Utils.join(preDir,addedFileSHA_1.substring(2)).exists()) {
-                return;
-            }
-            File stageFile = Utils.join(GITLET_DIR,"StagingArea");
-            StagingArea stagingArea = Utils.readObject(stageFile,StagingArea.class);
-            stagingArea.getAddtion().put(fileName,addedFileSHA_1);
+            Utils.saveFileTObjectDir(addedFile);
+            StagingArea stagingArea = Utils.readObject(StagingArea,StagingArea.class);
+            stagingArea.getAddition().put(fileName,Utils.sha1((Object) Utils.readContents(addedFile)));
         } else {
             System.out.println("File does not exist.");
             System.exit(1);
         }
+    }
+
+    /**
+     * commit the file from staging area to .gitlet dir .
+     * then , make this version into a commit and commit to gitlet
+     * the new commit include new time , new blobs_SHA_1 .
+     * Move master pointer to new commit . renew log
+     * */
+    public static void commit(String msg) {
+        StagingArea stagingArea = Utils.readObject(StagingArea,StagingArea.class);
+        Map<String,String> addition = stagingArea.getAddition();
+        Commit newCommit = new Commit(msg,Utils.readObject(masterfile,Commit.class));
+        newCommit.blobsId.putAll(addition);
+        addition.clear();
+        Set<String> removalArea = stagingArea.getRemoval();
+        for (String rmFileName : removalArea) {
+            newCommit.blobsId.remove(rmFileName);
+        }
+        removalArea.clear();
+        Utils.writeObject(masterfile, newCommit.getID());
+        Utils.saveCommitTOobjectDir(newCommit);
     }
 }

@@ -20,6 +20,14 @@ public class Main {
                 // TODO: handle the `add [filename]` command
                 Repository.add(args[1]);
                 break;
+            case "commit":
+                // TODO: handle the 'commit [message]' command
+                if (args[1].isEmpty()) {
+                    System.out.println("Please enter a commit message.");
+                    System.exit(1);
+                } else {
+                    Repository.commit (args[1]);
+                }
             case "":
                 System.out.println("Please enter a command.");
                 System.exit(1);
