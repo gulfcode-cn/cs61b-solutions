@@ -154,7 +154,7 @@ class Utils {
 
     /** Write OBJ to FILE. */
     static void writeObject(File file, Serializable obj) {
-        writeContents(file, serialize(obj));
+        writeContents(file, (Object) serialize(obj));
     }
 
     /* DIRECTORIES */
@@ -237,6 +237,9 @@ class Utils {
         System.out.println();
     }
 
+
+
+
     /*DIY FILE TOOL**/
 
     /* Save the blob to object dir throuth its SHA-1 code.*/
@@ -267,7 +270,7 @@ class Utils {
     }
 
     /**
-     * make dir faster and
+     * Make dir faster and
      * if dir not exist but make failed , it could throw error
      * if input dir has existed , then do nothing
      * */
@@ -280,7 +283,7 @@ class Utils {
     }
 
     /**
-     * return commit or blob file through SHA-1 code
+     * Return commit or blob file through SHA-1 code
      * if not exist , return null
      * */
     static File getFile(String ID) {
@@ -295,5 +298,20 @@ class Utils {
         } else {
             return null;
         }
+    }
+
+    /* Check if work directory is clean */
+    static boolean checkClean() {
+        File branch = new File(readContentsAsString(Repository.HEADfile));
+        Commit HEAD = readObject(branch, Commit.class);
+        List<String> workDirectory_file = plainFilenamesIn(Repository.CWD);
+        if (workDirectory_file != null) {
+            for (String fileName : workDirectory_file) {
+                if (!HEAD.blobs.containsKey(fileName) || !HEAD.blobs.get(fileName).equals(sha1(join(Repository.CWD,fileName)))) {
+                    return false;
+                }
+            }
+            return true;
+        } else return HEAD.blobs.isEmpty();
     }
 }

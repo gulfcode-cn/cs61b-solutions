@@ -1,7 +1,6 @@
 package gitlet;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,6 +20,7 @@ import static gitlet.Utils.*;
  *      * |------refs/
  *      * |   |--heads/
  *      * |      |---master
+ *      * |      |---... (branch
  *      * |------HEAD
  *      * |------StagingArea
  *
@@ -49,11 +49,11 @@ public class Repository {
     public static final File objects = Utils.join(GITLET_DIR,"objects");
     /* the dir */
     public static final File refs = Utils.join(GITLET_DIR,"refs");
-    /* the dir contains master file */
+    /* the dir contains branch file */
     public static final File heads = Utils.join(refs,"heads");
     /* pointer to lastest commit*/
     public static final File masterfile = Utils.join(heads,"master");
-    /* pointer to current commit (I guess ... */
+    /* pointer to current branch */
     public static final File HEADfile = Utils.join(GITLET_DIR,"HEAD");
     /* file contains waiting to be added or removed files*/
     public static final File StagingArea = Utils.join(GITLET_DIR,"StagingArea");
@@ -76,7 +76,7 @@ public class Repository {
             Utils.saveCommitTOobjectDir(commit);
             Utils.writeObject(StagingArea,stagingArea);
             Utils.writeObject(masterfile,commit.getID());
-            Utils.writeObject(HEADfile,commit.getID());
+            Utils.writeObject(HEADfile, masterfile.getAbsolutePath());
         } else {
             System.out.println("A Gitlet version-control system already exists in the current directory.");
             System.exit(1);
@@ -107,12 +107,12 @@ public class Repository {
      * commit the file from staging area to .gitlet dir .
      * then , make this version into a commit and commit to gitlet
      * the new commit include new time , new blobs_SHA_1 .
-     * Move master pointer to new commit . renew log and stagingArea file
+     * Move pointer to new commit . renew log and stagingArea file
      * */
     public static void commit(String msg) {
         StagingArea stagingArea = Utils.readObject(StagingArea,StagingArea.class);
         Map<String,String> addition = stagingArea.getAddition();
-        Commit newCommit = new Commit(msg,Utils.readObject(masterfile,Commit.class));
+        Commit newCommit = new Commit(msg,Utils.readObject(new File(Utils.readContentsAsString(HEADfile)),Commit.class));
         newCommit.blobs.putAll(addition);
         addition.clear();
         Set<String> removalArea = stagingArea.getRemoval();
@@ -133,10 +133,10 @@ public class Repository {
      * renew StagingArea .
      * */
     public static void rm(String fileName) {
-        String HeadID = Utils.readContentsAsString(HEADfile);
-        Commit HEAD = Utils.readObject(Utils.getFile(HeadID), Commit.class);
+        String branchAddress = Utils.readContentsAsString(HEADfile);
+        Commit branch = Utils.readObject(new File(branchAddress), Commit.class);
         StagingArea stagingArea = Utils.readObject(StagingArea, StagingArea.class);
-        boolean fileIsTracked = HEAD.blobs.containsKey(fileName);
+        boolean fileIsTracked = branch.blobs.containsKey(fileName);
         if (fileIsTracked || stagingArea.getAddition().containsKey(fileName)) {
             if (fileIsTracked) {
                 stagingArea.getRemoval().add(fileName);
@@ -150,4 +150,18 @@ public class Repository {
         }
     }
 
+    /* replace the file with file of commit that HEAD point to*/
+    public static void checkout(String fileName) {
+        File branch = new File(Utils.readContentsAsString(HEADfile));
+        File file = Utils.join(CWD,fileName);
+        Commit commit = Utils.readObject(Utils.getFile(Utils.readContentsAsString(branch)), Commit.class);
+        if (commit.blobs.containsKey(fileName)) {
+            File branchFile = Utils.getFile(commit.blobs.get(fileName));
+            Utils.writeContents(file,branchFile);
+        } else {
+            System.out.println("file not exist");
+            System.exit(1);
+        }
+
+    }
 }

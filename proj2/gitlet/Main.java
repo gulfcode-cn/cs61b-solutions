@@ -31,6 +31,25 @@ public class Main {
             case "rm":
                 // TODO: handle the 'rm [file name]'
                 Repository.rm(args[1]);
+            case "checkout":
+                // TODO: handle the 'checkout [commit id] -- [file name]'
+                //                  'checkout -- [file name]'
+                //                  'checkout [branch name]'  command
+                if (Utils.checkClean()) {
+                    int argNum = args.length;
+                    switch (argNum) {
+                        case 2:
+                        case 3:
+                            Repository.checkout(args[2]);
+                        case 4:
+                        default:
+                            System.out.println("The number of args is over 4");
+                            System.exit(1);
+                    }
+                } else {
+                    System.out.println("work directory is not clean");
+                    System.exit(1);
+                }
             case "":
                 System.out.println("Please enter a command.");
                 System.exit(1);
