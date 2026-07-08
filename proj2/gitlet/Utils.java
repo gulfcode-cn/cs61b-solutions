@@ -266,14 +266,34 @@ class Utils {
         writeObject(savedFile,commit);
     }
 
-    /** make dir faster and
-     *  if dir not exist but make failed , it could throw error
-     *  if input dir has existed , then do nothing*/
+    /**
+     * make dir faster and
+     * if dir not exist but make failed , it could throw error
+     * if input dir has existed , then do nothing
+     * */
     static void makeDir(File dir) {
         if (!dir.exists() && !dir.mkdir()) {
             String dirName = dir.getName();
             System.out.printf("%s created failed \n",dirName);
             System.exit(1);
+        }
+    }
+
+    /**
+     * return commit or blob file through SHA-1 code
+     * if not exist , return null
+     * */
+    static File getFile(String ID) {
+        File preDir = join(Repository.objects,ID.substring(0,2));
+        if (preDir.exists()) {
+            File savedFile = join(preDir,ID.substring(2));
+            if (savedFile.exists()) {
+                return savedFile;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
         }
     }
 }

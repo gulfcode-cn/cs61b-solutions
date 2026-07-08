@@ -20,7 +20,7 @@ public class Commit implements Serializable {
        String parentID
        String ID
        Instant commitTime
-       Deque<String> blobsId
+       Deque<String> blobs
        List all instance variables of the Commit class here with a useful
        comment above them describing what that variable represents and how that
        variable is used. We've provided one example for `message`.
@@ -40,8 +40,8 @@ public class Commit implements Serializable {
     /** the time of commit */
     private final Instant commitTime;
 
-    /** contain all SHA-1 hash code of blobs with Deque*/
-    public Map<String , String> blobsId;
+    /** key is file name , value is SHA-1 code of file*/
+    public Map<String , String> blobs;
 
     /** return sha-1 code of this commit*/
     public String getID() {
@@ -54,11 +54,11 @@ public class Commit implements Serializable {
         if (parent == null) {
             commitTime = Instant.EPOCH;
             parentID = null;
-            blobsId = new HashMap<>();
+            blobs = new HashMap<>();
         } else {
             commitTime = Instant.now();
             parentID = parent.ID;
-            blobsId = new HashMap<>(parent.blobsId);
+            blobs = new HashMap<>(parent.blobs);
         }
         ID = Utils.sha1((Object) Utils.serialize(this));
     }

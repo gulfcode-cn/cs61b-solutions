@@ -28,6 +28,9 @@ public class Main {
                 } else {
                     Repository.commit (args[1]);
                 }
+            case "rm":
+                // TODO: handle the 'rm [file name]'
+                Repository.rm(args[1]);
             case "":
                 System.out.println("Please enter a command.");
                 System.exit(1);

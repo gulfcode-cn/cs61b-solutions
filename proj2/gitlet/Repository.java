@@ -1,6 +1,7 @@
 package gitlet;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -52,23 +53,21 @@ public class Repository {
     public static final File heads = Utils.join(refs,"heads");
     /* pointer to lastest commit*/
     public static final File masterfile = Utils.join(heads,"master");
+    /* pointer to current commit (I guess ... */
+    public static final File HEADfile = Utils.join(GITLET_DIR,"HEAD");
     /* file contains waiting to be added or removed files*/
     public static final File StagingArea = Utils.join(GITLET_DIR,"StagingArea");
 
-    /** HEAD is the pointer that place checkout commit */
-    public static Commit HEAD;
-    /** master point to lastest commit*/
-    public static Commit master;
 
     /* TODO: fill in the rest of this class. */
 
-    /** create .gitlet dir in CWD , and make this dir be a gitlet dir .
+    /**
+     * create .gitlet dir in CWD , and make this dir be a gitlet dir .
      * if it has haven .gitlet then return " A Gitlet version-control
      * system already exists in the current directory. "
      * */
     public static void init() {
         if (!GITLET_DIR.exists() && GITLET_DIR.mkdir()) {
-            File HEAD = Utils.join(GITLET_DIR,"HEAD");
             StagingArea stagingArea = new StagingArea();
             Commit commit = new Commit("initial commit",null);
             Utils.makeDir(refs);
@@ -77,6 +76,7 @@ public class Repository {
             Utils.saveCommitTOobjectDir(commit);
             Utils.writeObject(StagingArea,stagingArea);
             Utils.writeObject(masterfile,commit.getID());
+            Utils.writeObject(HEADfile,commit.getID());
         } else {
             System.out.println("A Gitlet version-control system already exists in the current directory.");
             System.exit(1);
@@ -88,6 +88,7 @@ public class Repository {
      * it would be cover old one in staging area or just add in it .
      * if added file was the same as the version in lastest commit ,
      * then remove it from staging area .
+     * renew stagingArea
      * */
     public static void add(String fileName) {
         File addedFile = Utils.join(new File(System.getProperty("user.dir")),fileName);
@@ -95,6 +96,7 @@ public class Repository {
             Utils.saveFileTObjectDir(addedFile);
             StagingArea stagingArea = Utils.readObject(StagingArea,StagingArea.class);
             stagingArea.getAddition().put(fileName,Utils.sha1((Object) Utils.readContents(addedFile)));
+            Utils.writeObject(StagingArea,stagingArea);
         } else {
             System.out.println("File does not exist.");
             System.exit(1);
@@ -105,20 +107,47 @@ public class Repository {
      * commit the file from staging area to .gitlet dir .
      * then , make this version into a commit and commit to gitlet
      * the new commit include new time , new blobs_SHA_1 .
-     * Move master pointer to new commit . renew log
+     * Move master pointer to new commit . renew log and stagingArea file
      * */
     public static void commit(String msg) {
         StagingArea stagingArea = Utils.readObject(StagingArea,StagingArea.class);
         Map<String,String> addition = stagingArea.getAddition();
         Commit newCommit = new Commit(msg,Utils.readObject(masterfile,Commit.class));
-        newCommit.blobsId.putAll(addition);
+        newCommit.blobs.putAll(addition);
         addition.clear();
         Set<String> removalArea = stagingArea.getRemoval();
         for (String rmFileName : removalArea) {
-            newCommit.blobsId.remove(rmFileName);
+            newCommit.blobs.remove(rmFileName);
         }
         removalArea.clear();
         Utils.writeObject(masterfile, newCommit.getID());
         Utils.saveCommitTOobjectDir(newCommit);
+        Utils.writeObject(StagingArea,stagingArea);
     }
+
+    /**
+     * put the file into removal area of stagingArea ,
+     * then delete the file from workspace .
+     * if the file not exist or not be tracked by HEAD ,
+     * then print "No reason to remove the file." and exit 1 .
+     * renew StagingArea .
+     * */
+    public static void rm(String fileName) {
+        String HeadID = Utils.readContentsAsString(HEADfile);
+        Commit HEAD = Utils.readObject(Utils.getFile(HeadID), Commit.class);
+        StagingArea stagingArea = Utils.readObject(StagingArea, StagingArea.class);
+        boolean fileIsTracked = HEAD.blobs.containsKey(fileName);
+        if (fileIsTracked || stagingArea.getAddition().containsKey(fileName)) {
+            if (fileIsTracked) {
+                stagingArea.getRemoval().add(fileName);
+            }
+            stagingArea.getAddition().remove(fileName);
+            Utils.restrictedDelete(fileName);
+            Utils.writeObject(StagingArea,stagingArea);
+        } else {
+            System.out.println("No reason to remove the file.");
+            System.exit(1);
+        }
+    }
+
 }
