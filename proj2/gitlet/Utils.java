@@ -250,6 +250,7 @@ class Utils {
 
     /* function is same as the upon*/
     static void saveFileTObjectDir(File theFile) {
+        byte[] fileContent = readContents(theFile);
         String fileSHA_1 = sha1((Object) readContents(theFile));
         File preDir = Utils.join(Repository.objects,fileSHA_1.substring(0,2));
         makeDir(preDir);
@@ -257,12 +258,12 @@ class Utils {
         if (savedFile.exists()) {
             System.exit(0);
         }
-        writeObject(savedFile,theFile);
+        writeContents(savedFile, (Object) fileContent);
     }
 
     /* Save commit class to object dir*/
     static void saveCommitTOobjectDir(Commit commit) {
-        String commitSHA_1 = sha1((Object) serialize(commit));
+        String commitSHA_1 = commit.getID();
         File preDir = join(Repository.objects,commitSHA_1.substring(0,2));
         makeDir(preDir);
         File savedFile = join(preDir,commitSHA_1.substring(2));
@@ -300,18 +301,27 @@ class Utils {
         }
     }
 
+    /* Return commit HEAD pointe to */
+    static Commit getHEADofCommit() {
+        File branchFile = new File(readContentsAsString(Repository.HEADfile));
+        String commitId = readContentsAsString(branchFile);
+        File commitFile = getFile(commitId);
+        return readObject(commitFile, Commit.class);
+    }
+
     /* Check if work directory is clean */
     static boolean checkClean() {
-        File branch = new File(readContentsAsString(Repository.HEADfile));
-        Commit HEAD = readObject(branch, Commit.class);
+        Commit commitOfHEAD = getHEADofCommit();
         List<String> workDirectory_file = plainFilenamesIn(Repository.CWD);
         if (workDirectory_file != null) {
             for (String fileName : workDirectory_file) {
-                if (!HEAD.blobs.containsKey(fileName) || !HEAD.blobs.get(fileName).equals(sha1(join(Repository.CWD,fileName)))) {
+                File workSpaceFile = join(Repository.CWD,fileName);
+                if (!commitOfHEAD.blobs.containsKey(fileName) ||
+                        !commitOfHEAD.blobs.get(fileName).equals(sha1((Object) readContents(workSpaceFile)))) {
                     return false;
                 }
             }
             return true;
-        } else return HEAD.blobs.isEmpty();
+        } else return commitOfHEAD.blobs.isEmpty();
     }
 }

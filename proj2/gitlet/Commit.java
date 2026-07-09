@@ -13,7 +13,7 @@ import java.util.Map;
  *
  *  @author gulfcode-cn
  */
-public class Commit implements Serializable {
+public class Commit implements Serializable , Dumpable{
     /* *
        TODO: add instance variables here.
        String message
@@ -63,5 +63,15 @@ public class Commit implements Serializable {
         ID = Utils.sha1((Object) Utils.serialize(this));
     }
 
-
+    @Override
+    public void dump() {
+        System.out.printf("this commit id is : %s \n",ID);
+        System.out.println("message is : "+message);
+        System.out.println("tracked file : ");
+        for (Map.Entry<String,String> entry : blobs.entrySet()) {
+            System.out.println(entry.getKey());
+            System.out.println(entry.getValue());
+            System.out.println("===============");
+        }
+    }
 }

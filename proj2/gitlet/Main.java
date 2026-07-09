@@ -28,33 +28,37 @@ public class Main {
                 } else {
                     Repository.commit (args[1]);
                 }
+                break;
             case "rm":
                 // TODO: handle the 'rm [file name]'
                 Repository.rm(args[1]);
+                break;
             case "checkout":
                 // TODO: handle the 'checkout [commit id] -- [file name]'
                 //                  'checkout -- [file name]'
                 //                  'checkout [branch name]'  command
-                if (Utils.checkClean()) {
-                    int argNum = args.length;
-                    switch (argNum) {
-                        case 2:
-                        case 3:
-                            Repository.checkout(args[2]);
-                        case 4:
-                        default:
-                            System.out.println("The number of args is over 4");
-                            System.exit(1);
-                    }
-                } else {
-                    System.out.println("work directory is not clean");
-                    System.exit(1);
+                int argNum = args.length;
+                switch (argNum) {
+                    case 2:
+                        break;
+                    case 3:
+                        Repository.checkout(args[2]);
+                        break;
+                    case 4:
+                        break;
+                    default:
+                        System.out.println("The number of args is over 4");
+                        System.exit(1);
+                        break;
                 }
+                break;
             case "":
                 System.out.println("Please enter a command.");
                 System.exit(1);
+                break;
             default:
                 System.out.println("No command with that name exists.");
+                break;
             // TODO: FILL THE REST IN
         }
     }
