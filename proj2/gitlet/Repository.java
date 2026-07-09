@@ -1,6 +1,7 @@
 package gitlet;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -162,6 +163,35 @@ public class Repository {
             System.out.println("file not exist");
             System.exit(1);
         }
+    }
 
+    /* check out HEAD pointer to the branch , and renew work space*/
+    public static void checkoutBranch(String branchName) {
+        if (Utils.checkClean()) {
+            File branchFile = Utils.join(heads, branchName);
+            if (branchFile.exists()) {
+                List<String> currentFileNames = Utils.plainFilenamesIn(CWD);
+                if (currentFileNames != null) {
+                    for (String fileName : currentFileNames) {
+                        Utils.restrictedDelete(fileName);
+                    }
+                }
+                Utils.writeContents(HEADfile, branchFile.getPath());
+                Commit branchCommit = Utils.getHEADofCommit();
+                Map<String,String> blobFiles = branchCommit.blobs;
+                for (Map.Entry<String,String> entry : blobFiles.entrySet()) {
+                    File fileOfBranch = Utils.getFile(entry.getValue());
+                    File file = Utils.join(CWD,entry.getKey());
+                    String fileContent = Utils.readContentsAsString(fileOfBranch);
+                    Utils.writeContents(file,fileContent);
+                }
+            } else {
+                System.out.println("the branch is not exist");
+                System.exit(1);
+            }
+        } else {
+            System.out.println("work directory is not clean");
+            System.exit(1);
+        }
     }
 }

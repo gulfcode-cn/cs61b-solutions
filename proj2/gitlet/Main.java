@@ -39,7 +39,12 @@ public class Main {
                 //                  'checkout [branch name]'  command
                 int argNum = args.length;
                 switch (argNum) {
+                    case 1:
+                        System.out.println("plz inout more args");
+                        System.exit(1);
+                        break;
                     case 2:
+                        Repository.checkoutBranch(args[1]);
                         break;
                     case 3:
                         Repository.checkout(args[2]);
