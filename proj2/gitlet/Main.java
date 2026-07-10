@@ -58,6 +58,9 @@ public class Main {
                         break;
                 }
                 break;
+            case "log":
+                Repository.log();
+                break;
             case "":
                 System.out.println("Please enter a command.");
                 System.exit(1);

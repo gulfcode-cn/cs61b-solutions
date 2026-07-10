@@ -14,9 +14,8 @@ import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Formatter;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 /** Assorted utilities.
@@ -288,11 +287,15 @@ class Utils {
      * if not exist , return null
      * */
     static File getFile(String ID) {
-        File preDir = join(Repository.objects,ID.substring(0,2));
-        if (preDir.exists()) {
-            File savedFile = join(preDir,ID.substring(2));
-            if (savedFile.exists()) {
-                return savedFile;
+        if (ID != null) {
+            File preDir = join(Repository.objects, ID.substring(0, 2));
+            if (preDir.exists()) {
+                File savedFile = join(preDir, ID.substring(2));
+                if (savedFile.exists()) {
+                    return savedFile;
+                } else {
+                    return null;
+                }
             } else {
                 return null;
             }
@@ -323,5 +326,12 @@ class Utils {
             }
             return true;
         } else return commitOfHEAD.blobs.isEmpty();
+    }
+
+    /* print commit time at format*/
+    public static void printCommitTime(Commit commit) {
+        Date commitTime = commit.getCommitTime();
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.ENGLISH);
+        System.out.println("Date: " + sdf.format(commitTime));
     }
 }

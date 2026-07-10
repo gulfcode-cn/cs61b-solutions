@@ -4,6 +4,7 @@ package gitlet;
 
 import java.io.Serializable;
 import java.time.*;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,7 +39,7 @@ public class Commit implements Serializable , Dumpable{
     private final String ID;
 
     /** the time of commit */
-    private final Instant commitTime;
+    private final Date commitTime;
 
     /** key is file name , value is SHA-1 code of file*/
     public Map<String , String> blobs;
@@ -48,15 +49,31 @@ public class Commit implements Serializable , Dumpable{
         return ID;
     }
 
+    /* return parent id*/
+    public String getParentID() {
+        return parentID;
+    }
+
+    /* return commit time*/
+    public Date getCommitTime() {
+        return commitTime;
+    }
+
+    /* return commit message*/
+    public String getMessage() {
+        return message;
+    }
+
+
     /* construct commit */
     Commit(String msg , Commit parent ) {
         message = msg;
         if (parent == null) {
-            commitTime = Instant.EPOCH;
+            commitTime = new Date(0);
             parentID = null;
             blobs = new HashMap<>();
         } else {
-            commitTime = Instant.now();
+            commitTime = new Date();
             parentID = parent.ID;
             blobs = new HashMap<>(parent.blobs);
         }

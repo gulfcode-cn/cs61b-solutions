@@ -220,4 +220,48 @@ public class Repository {
             System.exit(1);
         }
     }
+
+    /** Start from the current HEAD commit,
+     * traverse back along the first parent chain
+     * and print to the initial commit (include time , id , message)
+     * */
+    public static void log() {
+        Commit ptr = Utils.getHEADofCommit();
+        while(ptr != null) {
+            System.out.println("===");
+            System.out.println("commit " + ptr.getID());
+            Utils.printCommitTime(ptr);
+            System.out.println(ptr.getMessage());
+            System.out.println();
+            if (ptr.getParentID() != null) {
+                ptr = Utils.readObject(Utils.getFile(ptr.getParentID()), Commit.class);
+            } else {
+                break;
+            }
+        }
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
