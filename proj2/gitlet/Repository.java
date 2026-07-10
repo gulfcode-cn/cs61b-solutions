@@ -194,4 +194,30 @@ public class Repository {
             System.exit(1);
         }
     }
+
+    /* replace the file with targeted version*/
+    public static void checkout(String commitID,String fileName) {
+        File fileInWorkSpace = Utils.join(CWD, fileName);
+        if (fileInWorkSpace.exists()) {
+            File commitFile = Utils.getFile(commitID);
+            if (commitFile != null) {
+                Commit commit = Utils.readObject(commitFile, Commit.class);
+                String fileId = commit.blobs.get(fileName);
+                if (fileId != null) {
+                    File file = Utils.getFile(fileId);
+                    String fileContent = Utils.readContentsAsString(file);
+                    Utils.writeContents(fileInWorkSpace, fileContent);
+                } else {
+                    System.out.println("the file is not exist in that version");
+                    System.exit(1);
+                }
+            } else {
+                System.out.println("commit id is not exist");
+                System.exit(1);
+            }
+        } else {
+            System.out.println("the file is not exist");
+            System.exit(1);
+        }
+    }
 }

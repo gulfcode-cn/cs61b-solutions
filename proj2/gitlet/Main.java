@@ -50,6 +50,7 @@ public class Main {
                         Repository.checkout(args[2]);
                         break;
                     case 4:
+                        Repository.checkout(args[1],args[3]);
                         break;
                     default:
                         System.out.println("The number of args is over 4");
