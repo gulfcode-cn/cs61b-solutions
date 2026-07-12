@@ -35,6 +35,9 @@ public class Commit implements Serializable , Dumpable{
     /** save Hash ID of parent*/
     private final String parentID;
 
+    /* save Hash ID of another parent from branch */
+    private final String branchParentID;
+
     /** the Hash ID of commit*/
     private final String ID;
 
@@ -54,6 +57,11 @@ public class Commit implements Serializable , Dumpable{
         return parentID;
     }
 
+    /* return branch parent Hash Id*/
+    public String getBranchParentID() {
+        return branchParentID;
+    }
+
     /* return commit time*/
     public Date getCommitTime() {
         return commitTime;
@@ -71,10 +79,12 @@ public class Commit implements Serializable , Dumpable{
         if (parent == null) {
             commitTime = new Date(0);
             parentID = null;
+            branchParentID = null;
             blobs = new HashMap<>();
         } else {
             commitTime = new Date();
             parentID = parent.ID;
+            branchParentID = null;
             blobs = new HashMap<>(parent.blobs);
         }
         ID = Utils.sha1((Object) Utils.serialize(this));

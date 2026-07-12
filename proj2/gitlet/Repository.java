@@ -1,9 +1,7 @@
 package gitlet;
 
 import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static gitlet.Utils.*;
 
@@ -257,6 +255,47 @@ public class Repository {
         }
     }
 
+    /** merge branch into master
+     *  if the file only exists in master , then keep it;
+     *  if the file only exists in branch , then place it into addition of Staging area;
+     *  if the file exists in spilt point , it wasn't modified in master and removed in branch , then rm it;
+     *  if the file was modified in both branch differently , then encounter a merge conflict .
+     * */
+    public static void merge(String branchName) {
+        File branchFile = Utils.join(heads,branchName);
+        if (!branchFile.exists()) {
+            System.out.println("branch not exist");
+            System.exit(1);
+        } else {
+            Commit branchCommit = Utils.readObject(branchFile, Commit.class);
+            Commit masterCommit = Utils.readObject(masterfile,Commit.class);
+            Commit spiltPoint = seekSpiltPoint(branchCommit);
+
+        }
+    }
+
+    /* just for finding spilt point*/
+    private static Commit seekSpiltPoint(Commit branchCommit) {
+        Commit masterCommit = Utils.readObject(masterfile, Commit.class);
+        Set<String> masterCommitSet = new HashSet<>();
+        Commit m_ptr = masterCommit;
+        Commit b_ptr = branchCommit;
+        while (m_ptr.getParentID() != null || b_ptr.getParentID() != null) {
+            if (m_ptr.getParentID() != null) {
+                if (!masterCommitSet.add(m_ptr.getID())) {
+                    return m_ptr;
+                }
+                m_ptr = Utils.readObject(Utils.getFile(m_ptr.getParentID()), Commit.class);
+            }
+            if (b_ptr.getParentID() != null) {
+                if (!masterCommitSet.add(b_ptr.getID())) {
+                    return b_ptr;
+                }
+                b_ptr = Utils.readObject(Utils.getFile(b_ptr.getParentID()),Commit.class);
+            }
+        }
+        return m_ptr;
+    }
 
 }
 

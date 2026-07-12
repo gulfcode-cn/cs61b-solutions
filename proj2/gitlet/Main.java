@@ -65,6 +65,9 @@ public class Main {
                 //TODO: handle the 'branch [branch name]' command
                 Repository.branch(args[1]);
                 break;
+            case "merge":
+                Repository.merge(args[1]);
+                break;
             case "":
                 System.out.println("Please enter a command.");
                 System.exit(1);

@@ -307,7 +307,8 @@ class Utils {
     /* Return commit HEAD pointe to */
     static Commit getHEADofCommit() {
         File branchFile = new File(readContentsAsString(Repository.HEADfile));
-        String commitId = readContentsAsString(branchFile);
+        String commitId = branchFile.exists() ?
+                readContentsAsString(branchFile) : readContentsAsString(Repository.HEADfile);
         File commitFile = getFile(commitId);
         return readObject(commitFile, Commit.class);
     }
