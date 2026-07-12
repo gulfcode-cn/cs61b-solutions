@@ -240,6 +240,24 @@ public class Repository {
             }
         }
     }
+
+    /** Make a new branch ,
+     *  the new branch points to HEAD commit when it was created.
+     *  if the branch which has the same name has existed ,
+     *  then failed and printf .
+     * */
+    public static void branch(String branchName) {
+        File branchFile = Utils.join(heads,branchName);
+        if (branchFile.exists()) {
+            System.out.println("A branch with that name already exists.");
+            System.exit(1);
+        } else {
+            Commit HEADCommit = Utils.getHEADofCommit();
+            Utils.writeContents(branchFile,HEADCommit.getID());
+        }
+    }
+
+
 }
 
 

@@ -61,6 +61,10 @@ public class Main {
             case "log":
                 Repository.log();
                 break;
+            case "branch":
+                //TODO: handle the 'branch [branch name]' command
+                Repository.branch(args[1]);
+                break;
             case "":
                 System.out.println("Please enter a command.");
                 System.exit(1);
