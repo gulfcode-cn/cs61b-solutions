@@ -141,7 +141,10 @@ public class Repository {
                 stagingArea.getRemoval().add(fileName);
             }
             stagingArea.getAddition().remove(fileName);
-            Utils.restrictedDelete(fileName);
+            File file = new File(fileName);
+            if (file.exists()) {
+                Utils.restrictedDelete(fileName);
+            }
             Utils.writeObject(StagingArea,stagingArea);
         } else {
             System.out.println("No reason to remove the file.");
@@ -158,7 +161,7 @@ public class Repository {
             File blobFile = Utils.getFile(file_Id);
             Utils.writeContents(file,Utils.readContentsAsString(blobFile));
         } else {
-            System.out.println("file not exist");
+            System.out.println("file not exist in HEAD .");
             System.exit(1);
         }
     }
@@ -169,18 +172,21 @@ public class Repository {
             File branchFile = Utils.join(heads, branchName);
             if (branchFile.exists()) {
                 Set<String> currentFileNames = getHEADofCommit().blobs.keySet();
-                for (String fileName : currentFileNames) {
-                    restrictedDelete(fileName);
+                String CommitId = readContentsAsString(branchFile);
+                Commit branchCommit = readObject(getFile(CommitId), Commit.class);
+                Set<String> allFileNames = new HashSet<>(currentFileNames);
+                allFileNames.addAll(branchCommit.blobs.keySet());
+                for (String fileName : allFileNames) {
+                    String blobId = branchCommit.blobs.get(fileName);
+                    File blobInBranch = getFile(blobId);
+                    File fileInCurrent = join(CWD,fileName);
+                    if (blobInBranch.exists()) {
+                        writeContents(fileInCurrent,readContentsAsString(blobInBranch));
+                    } else {
+                        restrictedDelete(fileInCurrent);
+                    }
                 }
-                Utils.writeContents(HEADfile, branchFile.getPath());
-                Commit branchCommit = Utils.getHEADofCommit();
-                Map<String,String> blobFiles = branchCommit.blobs;
-                for (Map.Entry<String,String> entry : blobFiles.entrySet()) {
-                    File fileOfBranch = Utils.getFile(entry.getValue());
-                    File file = Utils.join(CWD,entry.getKey());
-                    String fileContent = Utils.readContentsAsString(fileOfBranch);
-                    Utils.writeContents(file,fileContent);
-                }
+                writeContents(HEADfile,branchFile.getPath());
             } else {
                 System.out.println("the branch is not exist");
                 System.exit(1);
