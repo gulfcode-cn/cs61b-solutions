@@ -168,11 +168,9 @@ public class Repository {
         if (Utils.checkClean()) {
             File branchFile = Utils.join(heads, branchName);
             if (branchFile.exists()) {
-                List<String> currentFileNames = Utils.plainFilenamesIn(CWD);
-                if (currentFileNames != null) {
-                    for (String fileName : currentFileNames) {
-                        Utils.restrictedDelete(fileName);
-                    }
+                Set<String> currentFileNames = getHEADofCommit().blobs.keySet();
+                for (String fileName : currentFileNames) {
+                    restrictedDelete(fileName);
                 }
                 Utils.writeContents(HEADfile, branchFile.getPath());
                 Commit branchCommit = Utils.getHEADofCommit();
@@ -196,25 +194,20 @@ public class Repository {
     /* replace the file with targeted version*/
     public static void checkout(String commitID,String fileName) {
         File fileInWorkSpace = Utils.join(CWD, fileName);
-        if (fileInWorkSpace.exists()) {
-            File commitFile = Utils.getFile(commitID);
-            if (commitFile != null) {
-                Commit commit = Utils.readObject(commitFile, Commit.class);
-                String fileId = commit.blobs.get(fileName);
-                if (fileId != null) {
-                    File file = Utils.getFile(fileId);
-                    String fileContent = Utils.readContentsAsString(file);
-                    Utils.writeContents(fileInWorkSpace, fileContent);
-                } else {
-                    System.out.println("the file is not exist in that version");
-                    System.exit(1);
-                }
+        File commitFile = Utils.getFile(commitID);
+        if (commitFile != null) {
+            Commit commit = Utils.readObject(commitFile, Commit.class);
+            String fileId = commit.blobs.get(fileName);
+            if (fileId != null) {
+                File file = Utils.getFile(fileId);
+                String fileContent = Utils.readContentsAsString(file);
+                Utils.writeContents(fileInWorkSpace, fileContent);
             } else {
-                System.out.println("commit id is not exist");
+                System.out.println("the file is not exist in that version");
                 System.exit(1);
             }
         } else {
-            System.out.println("the file is not exist");
+            System.out.println("commit id is not exist");
             System.exit(1);
         }
     }
@@ -256,7 +249,7 @@ public class Repository {
     }
 
     /** merge branch into master
-     *  if the file only exists in master , then keep it;
+     *  if the file only exists in HEAD , then keep it;
      *  if the file only exists in branch , then place it into addition of Staging area;
      *  if the file exists in spilt point , it wasn't modified in master and removed in branch , then rm it;
      *  if the file was modified in both branch differently , then encounter a merge conflict .
@@ -268,35 +261,111 @@ public class Repository {
             System.exit(1);
         } else {
             Commit branchCommit = Utils.readObject(branchFile, Commit.class);
-            Commit masterCommit = Utils.readObject(masterfile,Commit.class);
-            Commit spiltPoint = seekSpiltPoint(branchCommit);
-
+            Commit HEADcommit = Utils.getHEADofCommit();
+            Commit spiltPoint = seekSplitPoint(Utils.readObject(branchFile, Commit.class));
+            File currentBranchFile = new File(Utils.readContentsAsString(HEADfile));
+            String currentBranchName = currentBranchFile.exists() ?
+                    currentBranchFile.getName() :
+                    readContentsAsString(HEADfile);
+            Commit mergeCommit = new Commit("Merged " + branchName + " into " + currentBranchName,
+                    HEADcommit,branchCommit);
+            Set<String> allName = new HashSet<>(HEADcommit.blobs.keySet());
+            allName.addAll(branchCommit.blobs.keySet());
+            allName.addAll(spiltPoint.blobs.keySet());
+            if (checkClean()) {
+                for (String fileName : allName) {
+                    String caseType = fileType(fileName, HEADcommit.blobs, branchCommit.blobs, spiltPoint.blobs);
+                    File file = join(CWD, fileName);
+                    String blobInHEADid = HEADcommit.blobs.get(fileName);
+                    switch (caseType) {
+                        case "only be modified or removed or added in HEAD commit":
+                            if (file.exists()) {
+                                mergeCommit.blobs.put(fileName, blobInHEADid);
+                                writeContents(file, readContentsAsString(getFile(blobInHEADid)));
+                            }
+                            break;
+                        case "file only modified , removed or added in branch":
+                            String fileInBranchId = branchCommit.blobs.get(fileName);
+                            if (fileInBranchId != null) {  //file is added or modified in branch
+                                writeContents(file, readContentsAsString(getFile(fileInBranchId)));
+                                add(fileName);
+                            } else {  //else is file removed in branch
+                                restrictedDelete(file);
+                            }
+                            break;
+                        case "there are same modification in same file",
+                             "file is same in all commit":
+                            mergeCommit.blobs.put(fileName, HEADcommit.getID());
+                            break;
+                        case "HEAD and branch has different modification in same file":
+                            File conflictFileInBranch = Utils.getFile(branchCommit.blobs.get(fileName));
+                            String contentOfBranchFile = conflictFileInBranch != null ?
+                                    readContentsAsString(conflictFileInBranch) :
+                                    "(file was removed in )" + branchName;
+                            String contentOfHEADfile = file.exists() ?
+                                    readContentsAsString(file) :
+                                    "(file was deleted in HEAD)";
+                            writeContents(file,
+                                    "<<<<<<< HEAD\n",
+                                    contentOfHEADfile,
+                                    "\n=======\n",
+                                    contentOfBranchFile,
+                                    "\n<<<<<<<" + branchName);
+                            String fileId = sha1((Object) readContents(file));
+                            mergeCommit.blobs.put(fileName,fileId);
+                            saveFileTObjectDir(file);
+                            System.out.println("Encountered a merge conflict In :" + fileName);
+                            break;
+                        default:
+                            System.out.println("encounter a error , an unexpected case.");
+                            System.exit(1);
+                    }
+                }
+                saveCommitTOobjectDir(mergeCommit);
+            } else {
+                System.out.println("work place is not clean");
+                System.exit(1);
+            }
         }
     }
 
     /* just for finding spilt point*/
-    private static Commit seekSpiltPoint(Commit branchCommit) {
-        Commit masterCommit = Utils.readObject(masterfile, Commit.class);
-        Set<String> masterCommitSet = new HashSet<>();
-        Commit m_ptr = masterCommit;
-        Commit b_ptr = branchCommit;
-        while (m_ptr.getParentID() != null || b_ptr.getParentID() != null) {
-            if (m_ptr.getParentID() != null) {
-                if (!masterCommitSet.add(m_ptr.getID())) {
-                    return m_ptr;
-                }
-                m_ptr = Utils.readObject(Utils.getFile(m_ptr.getParentID()), Commit.class);
-            }
-            if (b_ptr.getParentID() != null) {
-                if (!masterCommitSet.add(b_ptr.getID())) {
-                    return b_ptr;
-                }
-                b_ptr = Utils.readObject(Utils.getFile(b_ptr.getParentID()),Commit.class);
-            }
+    private static Commit seekSplitPoint(Commit branch) {
+        Commit HEAD = Utils.getHEADofCommit();
+        Commit H_ptr = HEAD;
+        Commit B_ptr = branch;
+        while (H_ptr != B_ptr) {
+            H_ptr = H_ptr.getParentID() != null ?
+                    readObject(getFile(H_ptr.getParentID()), Commit.class) : HEAD;
+            B_ptr = B_ptr.getParentID() != null ?
+                    readObject(getFile(B_ptr.getParentID()), Commit.class) : branch;
         }
-        return m_ptr;
+        return H_ptr;
     }
 
+
+    /* return status of file from HEAD , branch and baseCommit*/
+    private static String fileType(String fileName ,
+                                   Map<String,String> HEADblobs ,
+                                   Map<String,String> branchBlobs ,
+                                   Map<String,String> baseBlobs) {
+        boolean fileModifiedInHEAD = !Objects.equals(baseBlobs.get(fileName),HEADblobs.get(fileName));
+        boolean fileModifiedInBranch = !Objects.equals(baseBlobs.get(fileName),branchBlobs.get(fileName));
+        boolean fileHasDifferentContentBetweenHEADandBranch = !Objects.equals(HEADblobs.get(fileName),branchBlobs.get(fileName));
+        if (fileModifiedInHEAD && !fileModifiedInBranch) {
+            return "only be modified or removed or added in HEAD commit";
+        } else if (fileModifiedInHEAD) {
+            if (fileHasDifferentContentBetweenHEADandBranch) {
+                return "HEAD and branch has different modification in same file";
+            } else {
+                return "there are same modification in same file";
+            }
+        } else if (fileModifiedInBranch) {
+            return "file only modified , removed or added in branch";
+        } else {
+            return "file is same in all commit";
+        }
+    }
 }
 
 

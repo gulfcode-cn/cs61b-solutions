@@ -313,7 +313,9 @@ class Utils {
         return readObject(commitFile, Commit.class);
     }
 
-    /* Check if work directory is clean */
+    /* Check if work directory is clean , if there are some modification in workplace ,
+    *  then just add it to staging area .
+    * */
     static boolean checkClean() {
         Commit commitOfHEAD = getHEADofCommit();
         List<String> workDirectory_file = plainFilenamesIn(Repository.CWD);
@@ -330,7 +332,7 @@ class Utils {
     }
 
     /* print commit time at format*/
-    public static void printCommitTime(Commit commit) {
+    static void printCommitTime(Commit commit) {
         Date commitTime = commit.getCommitTime();
         SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.ENGLISH);
         System.out.println("Date: " + sdf.format(commitTime));

@@ -90,10 +90,20 @@ public class Commit implements Serializable , Dumpable{
         ID = Utils.sha1((Object) Utils.serialize(this));
     }
 
+    /* branch commit construction */
+    Commit(String msg , Commit parent , Commit secondParent) {
+        message = msg;
+        commitTime = new Date();
+        parentID = parent.ID;
+        branchParentID = secondParent.ID;
+        blobs = new HashMap<>();
+        ID = Utils.sha1((Object) Utils.serialize(this));
+    }
+
     @Override
     public void dump() {
         System.out.printf("this commit id is : %s \n",ID);
-        System.out.println("message is : "+message);
+        System.out.println("message is : " + message);
         System.out.println("tracked file : ");
         for (Map.Entry<String,String> entry : blobs.entrySet()) {
             System.out.println(entry.getKey());
