@@ -241,12 +241,6 @@ class Utils {
 
     /*DIY FILE TOOL**/
 
-    /* Save the blob to object dir throuth its SHA-1 code.*/
-    static void saveFileTOobjectDir(String fileName) {
-        File theFile = join(new File(System.getProperty("user.dir")),fileName);
-        saveFileTObjectDir(theFile);
-    }
-
     /* function is same as the upon*/
     static void saveFileTObjectDir(File theFile) {
         byte[] fileContent = readContents(theFile);

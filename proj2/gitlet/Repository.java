@@ -92,6 +92,11 @@ public class Repository {
     public static void add(String fileName) {
         File addedFile = Utils.join(new File(System.getProperty("user.dir")),fileName);
         if (addedFile.exists()) {
+            Commit HEADcommit = getHEADofCommit();
+            String HEADblobId = HEADcommit.blobs.get(fileName);
+            if (HEADblobId != null && HEADblobId.equals(sha1((Object) readContents(addedFile)))) {
+                return;
+            }
             Utils.saveFileTObjectDir(addedFile);
             StagingArea stagingArea = Utils.readObject(StagingArea,StagingArea.class);
             stagingArea.getAddition().put(fileName,Utils.sha1((Object) Utils.readContents(addedFile)));
@@ -111,10 +116,14 @@ public class Repository {
     public static void commit(String msg) {
         StagingArea stagingArea = Utils.readObject(StagingArea,StagingArea.class);
         Map<String,String> addition = stagingArea.getAddition();
+        Set<String> removalArea = stagingArea.getRemoval();
+        if (addition.isEmpty() && removalArea.isEmpty()) {
+            System.out.println("No change added into commit");
+            return;
+        }
         Commit newCommit = new Commit(msg,Utils.getHEADofCommit());
         newCommit.blobs.putAll(addition);
         addition.clear();
-        Set<String> removalArea = stagingArea.getRemoval();
         for (String rmFileName : removalArea) {
             newCommit.blobs.remove(rmFileName);
         }
@@ -289,6 +298,9 @@ public class Repository {
         while(ptr != null) {
             System.out.println("===");
             System.out.println("commit " + ptr.getID());
+            if (ptr.getBranchParentID() != null) {
+                System.out.println("merge :" + ptr.getParentID().substring(0,8) + " " + ptr.getBranchParentID().substring(0,8));
+            }
             Utils.printCommitTime(ptr);
             System.out.println(ptr.getMessage());
             System.out.println();
@@ -393,7 +405,7 @@ public class Repository {
                             break;
                         case "there are same modification in same file",
                              "file is same in all commit":
-                            mergeCommit.blobs.put(fileName, HEADcommit.getID());
+                            mergeCommit.blobs.put(fileName, HEADcommit.blobs.get(fileName));
                             break;
                         case "HEAD and branch has different modification in same file":
                             File conflictFileInBranch = Utils.getFile(branchCommit.blobs.get(fileName));
@@ -408,9 +420,10 @@ public class Repository {
                                     contentOfHEADfile,
                                     "\n=======\n",
                                     contentOfBranchFile,
-                                    "\n<<<<<<<" + branchName);
+                                    "\n>>>>>>>" + branchName);
                             String fileId = sha1((Object) readContents(file));
                             mergeCommit.blobs.put(fileName,fileId);
+                            writeContents(branchFile,mergeCommit.getID());
                             saveFileTObjectDir(file);
                             System.out.println("Encountered a merge conflict In :" + fileName);
                             break;
@@ -434,9 +447,9 @@ public class Repository {
         Commit B_ptr = branch;
         while (!H_ptr.equals(B_ptr)) {
             H_ptr = H_ptr.getParentID() != null ?
-                    readObject(getFile(H_ptr.getParentID()), Commit.class) : HEAD;
+                    readObject(getFile(H_ptr.getParentID()), Commit.class) : branch;
             B_ptr = B_ptr.getParentID() != null ?
-                    readObject(getFile(B_ptr.getParentID()), Commit.class) : branch;
+                    readObject(getFile(B_ptr.getParentID()), Commit.class) : HEAD;
         }
         return H_ptr;
     }
@@ -496,7 +509,8 @@ public class Repository {
                 }
             }
             writeObject(StagingArea,stagingArea);
-            writeContents(masterfile,commitID);
+            File HEADbranchFile = new File(readContentsAsString(HEADfile));
+            writeContents(getFile(readContentsAsString(HEADbranchFile)),commitID);
         }
     }
 
