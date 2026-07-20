@@ -33,6 +33,10 @@ public class Main {
                 // TODO: handle the 'rm [file name]'
                 Repository.rm(args[1]);
                 break;
+            case "status":
+                // TODO:
+                Repository.status();
+                break;
             case "checkout":
                 // TODO: handle the 'checkout [commit id] -- [file name]'
                 //                  'checkout -- [file name]'
@@ -66,6 +70,7 @@ public class Main {
                 Repository.branch(args[1]);
                 break;
             case "merge":
+                //TODO: handle the 'merge [branch name]' command
                 Repository.merge(args[1]);
                 break;
             case "":

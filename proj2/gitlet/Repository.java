@@ -152,6 +152,68 @@ public class Repository {
         }
     }
 
+    /**
+     * show all current branches and mark HEAD branch with '*' ,
+     *  show staged added file names and removed file names .
+     * */
+    public static void status() {
+       StagingArea stagingArea = readObject(StagingArea, StagingArea.class);
+       Map<String , String> addition = stagingArea.getAddition();
+       Set<String> removalNames = stagingArea.getRemoval();
+       List<String> currentWorkFiles = plainFilenamesIn(CWD);
+       Commit HEADcommit = getHEADofCommit();
+       Set<String> allFileNames = new HashSet<>();
+       Set<String> HEADblobsNames = HEADcommit.blobs.keySet();
+       Set<String> untrackedFileNames = new HashSet<>();
+       if (currentWorkFiles != null) {
+           allFileNames.addAll(currentWorkFiles);
+       }
+       allFileNames.addAll(HEADblobsNames);
+       String HEADname = getHEADname();
+       List<String> branchNames = plainFilenamesIn(heads);
+       if (branchNames != null) {
+           System.out.println("=== Branches ===");
+           for (String branchName : branchNames) {
+               if (Objects.equals(branchName, HEADname)) {
+                   System.out.print("*");
+               }
+               System.out.println(branchName);
+           }
+       }
+       System.out.println("\n=== Staged Files ===");
+       for (Map.Entry<String,String> entry : addition.entrySet()) {
+           System.out.println(entry.getKey());
+       }
+       System.out.println("\n=== Removal Files ===");
+       for (String removalName : removalNames) {
+           System.out.println(removalName);
+       }
+       System.out.println("\n=== Modifications Not Staged For Commit ===");
+       for (String fileName : allFileNames) {
+           if (addition.containsKey(fileName)
+                   || currentWorkFiles != null && HEADblobsNames.contains(fileName) && currentWorkFiles.contains(fileName)) {
+                File currentFile = new File(fileName);
+                boolean whetherSame = addition.containsKey(fileName) ?
+                        Objects.equals(addition.get(fileName),sha1((Object) readContents(currentFile))) :
+                        Objects.equals(HEADcommit.blobs.get(fileName),sha1((Object) readContents(currentFile)));
+                if (!whetherSame) {
+                     System.out.println(fileName + " (modified)");
+                }
+           } else if ( HEADblobsNames.contains(fileName) &&
+                   (currentWorkFiles == null || !currentWorkFiles.contains(fileName)) ) {
+                System.out.println(fileName + " (deleted)");
+           } else {
+               untrackedFileNames.add(fileName);
+           }
+       }
+       System.out.println("\n=== Untracked Files ===");
+       for (String fileName : untrackedFileNames) {
+           System.out.println(fileName);
+       }
+    }
+
+
+
     /* replace the file with file of commit that HEAD point to*/
     public static void checkout(String fileName) {
         File file = Utils.join(CWD,fileName);
@@ -180,7 +242,7 @@ public class Repository {
                     String blobId = branchCommit.blobs.get(fileName);
                     File blobInBranch = getFile(blobId);
                     File fileInCurrent = join(CWD,fileName);
-                    if (blobInBranch.exists()) {
+                    if (blobInBranch != null) {
                         writeContents(fileInCurrent,readContentsAsString(blobInBranch));
                     } else {
                         restrictedDelete(fileInCurrent);
@@ -269,10 +331,7 @@ public class Repository {
             Commit branchCommit = Utils.readObject(branchFile, Commit.class);
             Commit HEADcommit = Utils.getHEADofCommit();
             Commit spiltPoint = seekSplitPoint(Utils.readObject(branchFile, Commit.class));
-            File currentBranchFile = new File(Utils.readContentsAsString(HEADfile));
-            String currentBranchName = currentBranchFile.exists() ?
-                    currentBranchFile.getName() :
-                    readContentsAsString(HEADfile);
+            String currentBranchName = getHEADname();
             Commit mergeCommit = new Commit("Merged " + branchName + " into " + currentBranchName,
                     HEADcommit,branchCommit);
             Set<String> allName = new HashSet<>(HEADcommit.blobs.keySet());

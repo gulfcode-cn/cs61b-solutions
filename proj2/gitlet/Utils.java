@@ -255,7 +255,7 @@ class Utils {
         makeDir(preDir);
         File savedFile = join(preDir,fileSHA_1.substring(2));
         if (savedFile.exists()) {
-            System.exit(0);
+            return;
         }
         writeContents(savedFile, (Object) fileContent);
     }
@@ -336,5 +336,11 @@ class Utils {
         Date commitTime = commit.getCommitTime();
         SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.ENGLISH);
         System.out.println("Date: " + sdf.format(commitTime));
+    }
+
+    /* get HEAD branch name*/
+    static String getHEADname() {
+        File HEADcommitFile = new File(readContentsAsString(Repository.HEADfile));
+        return HEADcommitFile.exists() ? HEADcommitFile.getName() : readContentsAsString(HEADcommitFile);
     }
 }
