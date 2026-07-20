@@ -361,9 +361,9 @@ public class Repository {
             System.out.println("branch not exist");
             System.exit(1);
         } else {
-            Commit branchCommit = Utils.readObject(branchFile, Commit.class);
+            Commit branchCommit = Utils.readObject(getFile(readContentsAsString(branchFile)), Commit.class);
             Commit HEADcommit = Utils.getHEADofCommit();
-            Commit spiltPoint = seekSplitPoint(Utils.readObject(branchFile, Commit.class));
+            Commit spiltPoint = seekSplitPoint(branchCommit);
             String currentBranchName = getHEADname();
             Commit mergeCommit = new Commit("Merged " + branchName + " into " + currentBranchName,
                     HEADcommit,branchCommit);
@@ -432,7 +432,7 @@ public class Repository {
         Commit HEAD = Utils.getHEADofCommit();
         Commit H_ptr = HEAD;
         Commit B_ptr = branch;
-        while (H_ptr != B_ptr) {
+        while (!H_ptr.equals(B_ptr)) {
             H_ptr = H_ptr.getParentID() != null ?
                     readObject(getFile(H_ptr.getParentID()), Commit.class) : HEAD;
             B_ptr = B_ptr.getParentID() != null ?
@@ -464,6 +464,43 @@ public class Repository {
             return "file is same in all commit";
         }
     }
+
+    /* push back commit version to given commit*/
+    public static void reset(String commitID) {
+        File givenCommitFile = getFile(commitID);
+        List<String> currentFileNames = plainFilenamesIn(CWD);
+        Set<String> HEADblobNames = getHEADofCommit().blobs.keySet();
+        if (currentFileNames != null) {
+            for (String name : currentFileNames) {
+                if (!HEADblobNames.contains(name)) {
+                    System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                    return;
+                }
+            }
+        }
+        if (givenCommitFile != null) {
+            Commit givenCommit = readObject(getFile(commitID),Commit.class);
+            StagingArea stagingArea = readObject(StagingArea, StagingArea.class);
+            stagingArea.clear();
+            Set<String> allFileNames = new HashSet<>(givenCommit.blobs.keySet());
+            if (plainFilenamesIn(CWD) != null) {
+                allFileNames.addAll(Objects.requireNonNull(plainFilenamesIn(CWD)));
+            }
+            for (String fileName : allFileNames) {
+                File file = new File(fileName);
+                if (givenCommit.blobs.containsKey(fileName)) {
+                    File blobFile = getFile(givenCommit.blobs.get(fileName));
+                    writeContents(file,readContentsAsString(blobFile));
+                } else {
+                    restrictedDelete(file);
+                }
+            }
+            writeObject(StagingArea,stagingArea);
+            writeContents(masterfile,commitID);
+        }
+    }
+
+
 }
 
 

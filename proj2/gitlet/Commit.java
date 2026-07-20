@@ -3,10 +3,10 @@ package gitlet;
 // TODO: any imports you need here
 
 import java.io.Serializable;
-import java.time.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -109,6 +109,16 @@ public class Commit implements Serializable , Dumpable{
             System.out.println(entry.getKey());
             System.out.println(entry.getValue());
             System.out.println("===============");
+        }
+    }
+
+    /* judge equality*/
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Commit) {
+            return Objects.equals(this.ID, ((Commit) o).ID);
+        } else {
+            throw new IllegalArgumentException("error arg class");
         }
     }
 }

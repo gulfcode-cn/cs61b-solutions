@@ -81,6 +81,10 @@ public class Main {
                 //TODO: handle the 'merge [branch name]' command
                 Repository.merge(args[1]);
                 break;
+            case "reset":
+                //TODO: handle the 'reset [commit id]' command
+                Repository.reset(args[1]);
+                break;
             case "":
                 System.out.println("Please enter a command.");
                 System.exit(1);

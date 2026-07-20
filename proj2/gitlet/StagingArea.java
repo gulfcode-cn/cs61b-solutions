@@ -22,6 +22,12 @@ public class StagingArea implements Serializable ,Dumpable{
         return removal;
     }
 
+    /* clear staging area*/
+    public void clear() {
+        addition.clear();
+        removal.clear();
+    }
+
     StagingArea() {
         addition = new HashMap<>();
         removal = new HashSet<>();
