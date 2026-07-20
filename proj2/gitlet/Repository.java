@@ -316,6 +316,22 @@ public class Repository {
         }
     }
 
+    /**
+     * remove the branch not commit
+     * should not remove current branch
+     * */
+    public static void rm_branch(String branchName) {
+        if (Objects.equals(getHEADname(), branchName)) {
+            System.out.println("Cannot remove the current branch.");
+        } else if (Objects.requireNonNull(plainFilenamesIn(heads)).contains(branchName)) {
+            File branchFile = join(heads,branchName);
+            restrictedDelete(branchFile);
+        } else {
+            System.out.println("A branch with that name does not exist.");
+        }
+    }
+
+
     /* Print out all IDs of commit that contain given message*/
     public static void find(String message) {
         Commit ptr = getHEADofCommit();
