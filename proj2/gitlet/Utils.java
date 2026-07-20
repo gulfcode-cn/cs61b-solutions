@@ -307,22 +307,19 @@ class Utils {
         return readObject(commitFile, Commit.class);
     }
 
-    /* Check if work directory is clean , if there are some modification in workplace ,
-    *  then just add it to staging area .
-    * */
-    static boolean checkClean() {
-        Commit commitOfHEAD = getHEADofCommit();
-        List<String> workDirectory_file = plainFilenamesIn(Repository.CWD);
-        if (workDirectory_file != null) {
-            for (String fileName : workDirectory_file) {
-                File workSpaceFile = join(Repository.CWD,fileName);
-                if (!commitOfHEAD.blobs.containsKey(fileName) ||
-                        !commitOfHEAD.blobs.get(fileName).equals(sha1((Object) readContents(workSpaceFile)))) {
-                    return false;
-                }
+    /**
+     * Check if work directory is clean , if there are some modifications or new additions in workplace ,
+     */
+    static void checkUntracked(File branchFile) {
+        Commit HEADcommit = getHEADofCommit();
+        Commit branchCommit = readObject(getFile(readContentsAsString(branchFile)), Commit.class);
+        for (String fileName : branchCommit.blobs.keySet()) {
+            File file = join(Repository.CWD,fileName);
+            if (file.exists() && !HEADcommit.blobs.containsKey(fileName)) {
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                System.exit(1);
             }
-            return true;
-        } else return commitOfHEAD.blobs.isEmpty();
+        }
     }
 
     /* print commit time at format*/

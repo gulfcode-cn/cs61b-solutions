@@ -96,7 +96,7 @@ public class Commit implements Serializable , Dumpable{
         commitTime = new Date();
         parentID = parent.ID;
         branchParentID = secondParent.ID;
-        blobs = new HashMap<>();
+        blobs = new HashMap<>(parent.blobs);
         ID = Utils.sha1((Object) Utils.serialize(this));
     }
 
