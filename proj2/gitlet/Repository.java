@@ -316,6 +316,23 @@ public class Repository {
         }
     }
 
+    /* Print out all IDs of commit that contain given message*/
+    public static void find(String message) {
+        Commit ptr = getHEADofCommit();
+        while (ptr != null) {
+            if (Objects.equals(ptr.getMessage(), message)) {
+                System.out.println(ptr.getID());
+            }
+            if (ptr.getParentID() == null) {
+                break;
+            } else {
+                ptr = readObject(getFile(ptr.getParentID()), Commit.class);
+            }
+        }
+    }
+
+
+
     /** merge branch into master
      *  if the file only exists in HEAD , then keep it;
      *  if the file only exists in branch , then place it into addition of Staging area;

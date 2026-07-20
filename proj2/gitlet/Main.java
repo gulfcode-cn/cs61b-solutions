@@ -69,6 +69,10 @@ public class Main {
                 //TODO: handle the 'branch [branch name]' command
                 Repository.branch(args[1]);
                 break;
+            case "find":
+                //TODO: handle the 'find [commit message]' command
+                Repository.find(args[1]);
+                break;
             case "merge":
                 //TODO: handle the 'merge [branch name]' command
                 Repository.merge(args[1]);
